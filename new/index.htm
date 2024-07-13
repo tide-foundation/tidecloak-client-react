@@ -19,7 +19,7 @@
       function login() {
         // Define Tidecloak configuration URL
         const keycloakConfigUrl =
-          "https://staging.dauthvm.me/realms/mytest/.well-known/openid-configuration";
+          "https://staging.dauth.me/realms/mytest/.well-known/openid-configuration";
  
         // Fetch Tidecloak configuration
         fetch(keycloakConfigUrl)
@@ -74,7 +74,7 @@
         const code = urlParams.get("code");
         // Once the code is received, exchange it for tokens
         fetch(
-          "https://staging.dauthvm.me/realms/mytest/protocol/openid-connect/token",
+          "https://staging.dauth.me/realms/mytest/protocol/openid-connect/token",
           {
             method: "POST",
             headers: {

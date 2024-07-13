@@ -5,7 +5,7 @@ import Keycloak from "keycloak-js";
 export default function App() {
   // function initKeycloak() {
   var keycloak = new Keycloak({
-    url: "https://staging.dauthvm.me",
+    url: "https://staging.dauth.me",
     realm: "mytest",
     clientId: "myclient"
   });
