@@ -1,2 +1,2 @@
-# tidecloak-client-react
-ReactJS client example for TideCloak
+# keycloak-js-react
+Created with CodeSandbox

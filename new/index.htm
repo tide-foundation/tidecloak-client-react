@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login with Tidecloak</title>
+  </head>
+  <body>
+    <h1>Login with Tidecloak</h1>
+ 
+    <button onclick="login()">Login with Tidecloak</button>
+ 
+    <div id="emailDisplay" style="display: none;">
+      <p>Email: <span id="email"></span></p>
+    </div>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/keycloak-js@25.0.1/dist/keycloak.min.js"></script>
+    <script>
+      function login() {
+        // Define Tidecloak configuration URL
+        const keycloakConfigUrl =
+          "https://staging.dauthvm.me/realms/mytest/.well-known/openid-configuration";
+ 
+        // Fetch Tidecloak configuration
+        fetch(keycloakConfigUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((config) => {
+            // Construct login URL with email scope
+            const loginUrl =
+              config.authorization_endpoint +
+              "?client_id=myclient" +
+              "&redirect_uri=http://localhost:6001/new/index.htm" +
+              "&response_type=code" + // Request authorization code
+              "&scope=openid"; // Include openid scope
+ 
+            // Redirect to Tidecloak login page
+            window.location.href = loginUrl;
+          })
+          .catch((error) => {
+            console.error("Error fetching Tidecloak configuration:", error);
+          });
+      }
+ 
+      function displayEmail(email) {
+        document.getElementById("email").innerText = email;
+        document.getElementById("emailDisplay").style.display = "block";
+      }
+ 
+      // Function to parse and display email from JWT
+      function parseAndDisplayEmail(token) {
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        const email = decodedToken.email;
+        displayEmail(email);
+      }
+ 
+      // Function to store tokens in session storage
+      function storeTokens(tokens) {
+        sessionStorage.setItem("access_token", tokens.access_token);
+        sessionStorage.setItem("id_token", tokens.id_token);
+        // Optionally store refresh token if available
+        if (tokens.refresh_token) {
+          sessionStorage.setItem("refresh_token", tokens.refresh_token);
+        }
+      }
+ 
+      // Check if the URL contains a code parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has("code")) {
+        const code = urlParams.get("code");
+        // Once the code is received, exchange it for tokens
+        fetch(
+          "https://staging.dauthvm.me/realms/mytest/protocol/openid-connect/token",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              grant_type: "authorization_code",
+              client_id: "myclient",
+              redirect_uri: "http://localhost:6001/new/index.htm",
+              code: code,
+            }),
+          }
+        )
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Failed to exchange code for tokens");
+            }
+            return response.json();
+          })
+          .then((tokens) => {
+            // Store tokens in session storage
+            storeTokens(tokens);
+            // Once the tokens are received, extract and display the email from the ID token
+            parseAndDisplayEmail(tokens.id_token);
+          })
+          .catch((error) => {
+            console.error("Error exchanging code for tokens:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
